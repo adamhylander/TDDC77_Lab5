@@ -1,9 +1,6 @@
 package laboration5;
-
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class Dictionary {
 	
@@ -20,18 +17,16 @@ public class Dictionary {
 			map.put(t, newSet);
 		}
 		
-		System.out.println(map);
-		
 	}
 	
-	public void add(String t, String m) {
-		add(new Word(t), new Word(m));
+	public void add(String keys, String values) {
+		add(new Word(keys), new Word(values));
 	}
 	
 	
 	 // Returnerar en icke-null mängd med ordlistans alla termer.
 	 
-	public Set<Word> term() {
+	public Set<Word> terms() {
 		return map.keySet();
 	}
 	
@@ -51,36 +46,52 @@ public class Dictionary {
 	public Dictionary inverse() {
 		Dictionary inverseDictionary = new Dictionary();
 		
-		for(Word term : map.keySet()) {
-			
-			if(map.get(term).size() > 1) {
-				Object[] english = map.get(term).toArray();
-				
-				for(int i = 0; i<map.get(term).size(); i++) {
-					inverseDictionary.add((Word) english[i], term);
-				}
-				
-			}else {
-				Object[] english = map.get(term).toArray();
-				inverseDictionary.add((Word) english[0], term);
+		for(Word key : map.keySet()) {
+			for (Word value : lookup(key)) {
+			inverseDictionary.add(value, key);
 			}
 		}
 		return inverseDictionary;
 		
 	}
 	
-	/* 
-	 * Läser in orden från den givna strömmen och lägger dessa i ordlistan.
-	 */
+	 
+	//  Läser in orden från den givna strömmen och lägger dessa i ordlistan.
+	 
 	
 	public void load(InputStream is) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+	        while (reader.ready()) {
+	            String line = reader.readLine();
+	            String[] words = line.split(",");
+	            add(words[0],words[1]);
+	           
+	        }
+
+	        
+	    }catch (FileNotFoundException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	    }
 	}
 	
-	/* 
-	 * Lagrar ordlistan på den givna strömmen.
-	 */
 	
-	public void save(OutputStream os) {
+	 // Lagrar ordlistan på den givna strömmen.
+	 
+	
+	public void save(OutputStream os) throws IOException {
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(os);
+		for(Word key : map.keySet()) {
+				for(Word value : map.get(key)) {
+					outputStreamWriter.write(key + "," + value + "\n");
+					
+				}
+		}
+
+		outputStreamWriter.close();
 	}
 	
 	
