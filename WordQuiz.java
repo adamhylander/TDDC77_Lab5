@@ -1,84 +1,98 @@
 package laboration5;
+import java.io.*;
+import java.util.*;
 
-import java.util.Scanner;
-public class WordQuiz {
-private Scanner input = new Scanner(System.in);
+public class Dictionary {
 	
-	public WordQuiz(Dictionary dictionary) {
+	Map<Word,Set<Word>> map = new HashMap<Word,Set<Word>>();
+	
+	public void add(Word t, Word m) {
+		if(map.containsKey(t)) {
+			Set<Word> nyttM = map.get(t);
+			nyttM.add(m);
+		}
+		else {
+			Set<Word> newSet = new HashSet<>();
+			newSet.add(m);
+			map.put(t, newSet);
+		}
 		
 	}
 	
-	public void runQuiz() {
-		System.out.println("Första ordet är:");
+	public void add(String keys, String values) {
+		add(new Word(keys), new Word(values));
 	}
 	
-	private static int showMenu() {
-		System.out.println("1. Add Word");
-		System.out.println("2. Play Swedish to English");
-		System.out.println("3. Play English to Swedish");
-		System.out.println("4. Quit");
-		
-		Scanner input = new Scanner(System.in);
-		int choice = input.nextInt();
-		input.close();
-		return choice;
-
+	
+	 // Returnerar en icke-null mängd med ordlistans alla termer.
+	 
+	public Set<Word> terms() {
+		return map.keySet();
 	}
-
-	public static void main(String[] args) {
-// Skapa en tom ordlista på ngt sätt och fyll den med ord. Dictionary
+	
+	
+	 // Slår upp och returnerar en mängd av betydelser till t,
+	 // eller null om t inte finns i ordlistan
+	 
+	
+	public Set<Word> lookup(Word t) {
+		return map.get(t);
+	}
+	 
+	 // Skapar och returnerar en ny ordlista på det motsatta språket,
+	 // dvs, alla betydelser blir termer och alla termer blir betydelser.
+	 // T.ex en svensk-engelsk ordlist blir efter invertering engels-svensk.
+	
+	public Dictionary inverse() {
+		Dictionary inverseDictionary = new Dictionary();
 		
-		Dictionary sweng = new Dictionary();
-		sweng.add("hej", "hello");
-		sweng.add("hej", "hi");
-		sweng.add("hej", "hey");
-		sweng.add("godnatt", "good night");
-		sweng.add("nattinatti", "good night");
-		sweng.add("fågel", "bird");
-		sweng.add("hund", "dog");
-		sweng.add("katt", "cat");
-		WordQuiz quiz = new WordQuiz(sweng);
-		quiz.runQuiz();
-		
-		System.out.println("Welcome To My Wordquiz");
-		System.out.println("======================");
-		System.out.println("Select one of the following:");
-		
-		Scanner input = new Scanner(System.in);
-		
-		int result = 0;
-
-		while (result != 4) {
-			result = showMenu();
-			switch(result){
-				case 1:
-					String t = "";
-					String m = "";
-					
-					System.out.println("Type your word in swedish");
-					t = input.nextLine();
-					
-					System.out.println("Type your word in english");
-					m = input.nextLine();
-					
-					sweng.add(t,m);
-					break;
-					
-				case 2:
-					
-					break;
-				case 3:
-					
-					break;
-					
-				case 4:
-					System.out.println("Goodbye!");
-					break;
-					
-				default:
-					
-					break;
+		for(Word key : map.keySet()) {
+			for (Word value : lookup(key)) {
+			inverseDictionary.add(value, key);
 			}
 		}
-}
+		return inverseDictionary;
+		
+	}
+	
+	 
+	//  Läser in orden från den givna strömmen och lägger dessa i ordlistan.
+	 
+	
+	public void load(InputStream is) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+	        while (reader.ready()) {
+	            String line = reader.readLine();
+	            String[] words = line.split(",");
+	            add(words[0],words[1]);
+	           
+	        }
+
+	        
+	    }catch (FileNotFoundException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	    }
+	}
+	
+	
+	 // Lagrar ordlistan på den givna strömmen.
+	 
+	
+	public void save(OutputStream os) throws IOException {
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(os);
+		for(Word key : map.keySet()) {
+				for(Word value : map.get(key)) {
+					outputStreamWriter.write(key + "," + value + "\n");
+					
+				}
+		}
+
+		outputStreamWriter.close();
+	}
+	
+	
 }
